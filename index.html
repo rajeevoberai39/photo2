@@ -38,7 +38,7 @@
 
       // Upload to Cloudinary
       const formData = new FormData();
-      formData.append("file", base64Image);
+      formData.append("file", file);
       formData.append("upload_preset", "photo_upload");
 
       const res = await fetch("https://api.cloudinary.com/v1_1/rajeevoberai39/image/upload", {
